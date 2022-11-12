@@ -1,0 +1,232 @@
+---
+title: 'Linear Models: Homework 1'
+author: "Roel Jude Bagaforo"
+date: "30 October 2022"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+load("C:/Users/Roel Jude Bagaforo/Downloads/mice.RData")
+attach(mice)
+library(dplyr)
+library(skimr)
+library(ggplot2)
+library(pander)
+library(SciViews)
+```
+
+# 1 Homework Summary
+
+For this homework, we consider a pre-clinical study of ADDF19 which was 
+subjected for evaluation of potential negative side effects on blood serum 
+levels of Immunoglobulin G1. Eighteen mice were grouped by 3 and were 
+administered with 6 different doses of ADDF19.
+
+The following outputs were arranged according to the order of the research
+questions. An executive summary and a simulation study were presented at the 
+end. All statistical analysis were performed in RStudio 2022.07.0+548.
+
+# 2 Data Descriptives
+```{r,warning="False"}
+skim_without_charts(mice)
+par(mfrow=c(1,1))
+ggplot(mice, aes(concentration,IgG1)) + geom_point(color="blue") +
+  labs(title="Figure 1. Scatter Plot of IgG1 Concentration across ADDF19 
+       Dosages") +
+  xlab("ADDF 19 Dosage (ug)") + ylab ("IgG1 Concentration (mg/L)") +
+  geom_hline(yintercept=1.2, color="red") +
+  geom_hline(yintercept=5, color="red")
+#geom_hline are cut off for normal concentration values of IgG1
+```
+The data was consist of two variables, namely the different ADDF19 dosages and 
+corresponding concentration levels of IgG1. Graphically, it was observed that 
+there was a slightly noticeable decreasing IgG1 concentration associated with
+increasing ADDF19 dosage. Also, all of the recorded IgG1 concentrations were 
+inside the normal IgG1 values (as shown in Figure 1, all points were inside the 
+two red lines).
+
+\newpage
+
+# 3 Question 1
+
+## 3.1 Question 1.1
+What is the effect of the concentration of ADDF19 on the mean IgG1 blood level 
+concentrations?
+
+In order to answer this research question, a simple linear regression was 
+employed. The model that was considered was specified as follows:
+
+$$Y_i = β_0 + β_1X_i + \varepsilon_i $$
+where $Y_i$ refers to the IgG1 blood concentration levels for mouse i=1 to 18,
+$X_i$ refers to the ADDF19 dosage for mouse i=1 to 18, and β are the 
+regression coefficients and $\varepsilon_i$ as the error term.
+
+```{r, warning=FALSE}
+model <- lm(IgG1~concentration, data=mice)
+model_summary <- summary(model)
+pander(model_summary)
+```
+
+By fitting a simple linear regression, it was found out that the estimated
+effect, on average, of one (1) $\mu$g increase of ADDF19 dosage decreased the 
+IgG1 blood concentration levels by 0.3869 mg/L. In other words, it was observed 
+that there was an inverse relationship between the ADDF19 dosage and IgG1 blood 
+concentration levels.
+
+## 3.2 Question 1.2
+Give an appreciation of the (im)precision of the previous estimate (standard 
+error and a 95% confidence interval).
+
+```{r, warning=FALSE}
+model_summary$coefficients[2,2] #standard error of B1
+```
+
+\newpage
+
+```{r, warning=FALSE}
+ci_model <- confint(model) #CI of B1
+pander(ci_model)
+```
+Looking into the standard error of the estimate, it was 0.1129, which was quite 
+small. In addition, the 95% confidence interval of the estimated average effect
+($\beta_1$) was (-0.6262, -0.1476). Which means, 95% of the time, the effect of 
+an increase in ADDF19 dosage on the decrease on IgG1 blood concentration level 
+was within 0.14 to 0.62. The confidence interval did not contain zero (0) 
+suggesting that the estimated effect was significant (but this was explained 
+better in the hypothesis test in the next section). 
+
+## 3.3 Question 1.3
+Is there a significant effect of the concentration of ADDF19 on the mean
+IgG1 blood level of concentrations? This test must be performed at the
+5% level of significance.
+
+The study was formulated to test if there was a negative effect brought by
+ADDF19 on IgG1 concentration. Hence, a one-sided test for $\beta_1$ was the most
+appropriate. The following were the null and the alternative hypothesis:
+$$H_0:{\beta}_1 = 0$$
+$$H_1: {\beta}_1 < 0$$
+Based on the previous output of the simple linear regression model, the t-value 
+was -3.427 with a corresponding p-value of 0.0035. However, the t-test that was
+done for the previous output was a two-sided test. Therefore, in order to 
+compute for p-value of the one-sided test, needed for this question, the 
+two-sided p-value was divided by two (2).
+
+```{r, warning=FALSE}
+model_summary$coefficients[2,4]/2 #p-value of B1
+```
+The p-value of the one-sided test was 0.0017, which was lower than the 
+$\alpha=0.05$. Thus, the estimated -0.3869 mg/L average effect on IgG1 blood
+concentration levels by one (1) $\mu$g increase in ADDF19 dosage was significant.
+
+## 3.4 Executive Summary
+
+A pre-clinical study was done to evaluate the negative effect of the new drug,
+ADDF19, on the IgG1 blood concentration levels. Six different ADDF19 dosage
+were given to 18 mice and their IgG1 concentration levels were recorded. To
+answer the research questions, a simple linear regression model was used. Simple
+linear regression model is a model that describes a relationship of the
+dependent variable and the independent variable. For this study, the dependent
+variable was the IgG1 concentration and the independent variable was the ADDF19
+dosages. We expect that with this model we can have an estimate of the effect of
+unit increase in ADDF19 to the IgG1 concentration and the direction of the 
+effect (whether positive or negative).
+
+Results showed that one (1) $\mu$g increase in ADDF dosage will decrease
+the IgG1 blood concentration levels by 0.3869 mg/L. Furthermore, this estimated 
+negative effect can be between 0.15 to 0.63, 95% of the time. The estimated
+effect was subjected to hypothesis testing, and it was found out that the effect
+was statistically significant. Therefore, an increase in ADDF19 dosages can be
+associated with a decrease in IgG1 levels. However, it should be noted that even
+the highest dosage that was used in this study, the IgG1 blood concentration 
+level was still inside the healthy range. The ADDF19 dosage that will cause 
+unhealthy IgG1 blood concentration levels was estimated to be around more than 
+2.88 $\mu$g dosage (based on the simple linear regression estimate).
+
+```{r, warning=FALSE}
+#concentration = 2 ug ADDF19
+predict(model, newdata=data.frame(concentration=2), interval="prediction")
+#concentration that will breach 1.2 healthy cutoff
+predict(model, newdata=data.frame(concentration=2.88), interval="prediction")
+```
+\newpage
+# 4 Question 2 (Simulation)
+
+In this part, a simulation was done to determine the minimum sample required 
+for obtaining a power of 0.80 given different values of $\beta_1$. Parameters,
+such as the $\sigma^2$ and the $\beta_0$ were considered fixed.
+
+This simulation was arranged following the test for $\beta_1$.
+$H_0:{\beta}_1 = 0$     $H_1: {\beta}_1 < 0$
+where the test statistic is
+$$ T = \frac{\hat\beta_1}{\hat\sigma_{\beta_1}}$$
+With this test statistic, the only needed values are: (1) the $\hat\beta_1$ 
+which were range of values that was set; (2) and the $\hat\sigma_{\beta_1}$
+which was computed through the fixed $\sigma^2$, as estimated by the MSE, and
+the the distributed regressors over the sample size. Thus, no computations based
+on $Y_i$ was done as the two needed values did not depend on $Y_i$. A function 
+for $\hat\sigma_{\beta_1}$ was formulated were the six (6) predetermined and
+original regressors were repeated and assigned sequentially until all n rows 
+have a regressor value. For this simulation, the sample size was not restricted
+to be a multiple of the 6 (number of regressors) to allow for more flexibility
+in the determination of minimum sample size required (but in case of "balanced"
+design, codes were also prepared, mentioned in the comments below).
+Consequentially, the power was computed with the given $\alpha$=0.05, $\hat\beta_1$ 
+in the sequence, and the standard error computed in the previous function. A 
+for-while loop was then used to determine the minimum sample to reach a power of
+0.80. The plot of the simulation data and the codes are presented below:
+
+```{r, warning=FALSE}
+beta1_se <- function(a){
+#function for sigma2 of beta_1
+#a is the n=sample
+regressors <- c(0.5,0.75,1,1.25,1.5,2) #original 6 regressors
+x <- matrix(nrow=a,ncol=2)
+x[,1] <- 1
+x[,2] <- rep(regressors,length.out=a)
+#regressors are repeated sequentially until last row, thus it can be unbalanced
+#meaning not all 6 regressors have the same number
+#x[,2] <- rep(regressors, by=6) for balanced design
+mse <- sum(model$residuals^2)/(18-2) #from the original model, df=18-2
+se <- solve(t(x)%*%x)[2,2]*mse #sigma2 of beta_1
+return(se)
+}
+beta1seq <- seq(-0.4,-0.1, by=0.02) #range of test beta_1 values
+simulation <- matrix(nrow=16,ncol=2)
+simulation[,1] <- c(beta1seq)
+simulation[,2] <- 0
+i <- 1
+for(n in beta1seq){
+#n is the value in beta1seq
+  power <- 0 #initialize
+  min_sample <- 3 #initialize, 3 so df in power not be 0
+  #min_sample set to 6 for balanced design
+  while(power<0.80){ #stops until min_sample satisfies power of 0.80
+    min_sample <- min_sample+1 #6 for balanced design
+    power <- pt(-qt(0.95,df=min_sample-2),df=min_sample-2,ncp=n/sqrt(beta1_se(min_sample)))
+    #power computes for the power given the alpha=0.05 (0.95), and ncp=test 
+    #beta_1/se, one sided power test
+    #power can be computed through pwr.t.test from package pwr, however 
+    #df is fixed as n-1
+  }
+  simulation[i,2] <-min_sample #records the sample for given test beta_1
+  i <- i+1
+}
+sim_data <- as.data.frame(simulation)
+ggplot(sim_data,aes(V1,V2)) +
+  geom_point(color="blue", size=3) +
+  geom_line(color="blue") +
+  labs(title="Figure 2. Minimum Sample Size for β1 to have a Power=0.80") +
+  xlab("Effect Size (β1)") + ylab ("Minimum Sample Size")
+```
+From the plot, it can be observed that the needed sample size for values of $\beta_1$
+, the effect size, as it nears zero (0) rapidly increases. 
+
+
+
